@@ -3,7 +3,7 @@
     "displayName": "Admiral",
     "description": "vs code admiral extension",
     "publisher": "icefenix",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "icon": "admiral.png",
     "repository": {
         "type": "git",
@@ -20,53 +20,55 @@
     ],
     "main": "./out/extension.js",
     "contributes": {
-        "configuration": [{
-            "title": "Admiral Configuration",
-            "properties": {
-                "conf.application.admiralK8SDetails": {
-                    "type": "object",
-                    "description": "Local k8s Details",
-                    "properties": {
-                        "kubeconfig": {
-                            "type": "string",
-                            "description": "Location of the default kubeconfig file"
-                        }
-                    }
-                },
-                "conf.application.admiralEndPoints": {
-                    "type": "array",
-                    "items": {
+        "configuration": [
+            {
+                "title": "Admiral Configuration",
+                "properties": {
+                    "conf.application.admiralK8SDetails": {
                         "type": "object",
-                        "title": "Admiral Endpoint",
+                        "description": "Local k8s Details",
                         "properties": {
-                            "endpoint": {
+                            "kubeconfig": {
                                 "type": "string",
-                                "description": "Endpoint Url"
-                            },
-                            "name": {
-                                "type": "string",
-                                "description": "Name of cluster"
-                            },
-                            "user": {
-                                "type": "string",
-                                "description": "User to login as"
-                            },
-                            "k8sEndpoint": {
-                                "type": "string",
-                                "description": "k8s Api endpoint"
-                            },
-                            "insecureSkipTlsVerify": {
-                                "type": "boolean",
-                                "description": "Skip tls verify for the k8s Api endpoint"
+                                "description": "Location of the default kubeconfig file"
                             }
                         }
                     },
-                    "default": {},
-                    "description": "Admiral Locations to connect to.",
-                    "scope": "application"
+                    "conf.application.admiralEndPoints": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "title": "Admiral Endpoint",
+                            "properties": {
+                                "endpoint": {
+                                    "type": "string",
+                                    "description": "Endpoint Url"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of cluster"
+                                },
+                                "user": {
+                                    "type": "string",
+                                    "description": "User to login as"
+                                },
+                                "k8sEndpoint": {
+                                    "type": "string",
+                                    "description": "k8s Api endpoint"
+                                },
+                                "insecureSkipTlsVerify": {
+                                    "type": "boolean",
+                                    "description": "Skip tls verify for the k8s Api endpoint"
+                                }
+                            }
+                        },
+                        "default": {},
+                        "description": "Admiral Locations to connect to.",
+                        "scope": "application"
+                    }
                 }
             }
-        }]
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
