@@ -2,3 +2,4 @@ node_modules/
 out/
 node_modules/**
 out/**
+k8sconfig

@@ -38,18 +38,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	updateStatusBarItem();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('admiral.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		var user = vscode.window.showInputBox().then(f => {
-
-			// Display a message box to the user
-			vscode.window.showInformationMessage('Hello ' + f);
-		});
-	});
-
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
 
 		if (e.affectsConfiguration('conf.application.admiralK8SDetails')) {
@@ -63,7 +51,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		updateStatusBarItem();
 	}));
 
-	context.subscriptions.push(disposable);
 }
 
 function updateStatusBarItem(): void {
@@ -82,6 +69,11 @@ function updatek8s() {
 			vscode.window.showErrorMessage("kubeconfig location not set. \nConfig changes will not be saved. \nGive 'conf.application.admiralK8SDetails' a 'kubeconfig' property");
 		} else {
 			k8sconfigLocation = config.kubeconfig !== undefined ? config.kubeconfig : "";
+
+			if(!fs.existsSync(k8sconfigLocation)){
+				let output: string = YAML.stringify(k8syaml, 2, 2);
+				fs.writeFileSync(k8sconfigLocation, output);
+			}
 
 			k8syaml = YAML.load(k8sconfigLocation);
 		}
@@ -156,25 +148,26 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 			let clusterName: string = element.name;
 			let clusterUser: string = clusterName + "-user";
 			let contextName: string = contextNamespace + "/" + clusterName + "/" + clusterUser;
+			let insecureSkipTlsVerify: boolean = element.insecureSkipTlsVerify !== undefined ? element.insecureSkipTlsVerify : false; 
 			
 
-			if (k8syaml.clusters === undefined) {
+			if (k8syaml.clusters === undefined || k8syaml.clusters === null) {
 				k8syaml.clusters = new Array<ClusterElement>();
 			}
-			if (k8syaml.users === undefined) {
+			if (k8syaml.users === undefined || k8syaml.users === null) {
 				k8syaml.users = new Array<UserElement>();
 			}
-			if (k8syaml.contexts === undefined) {
+			if (k8syaml.contexts === undefined || k8syaml.contexts === null) {
 				k8syaml.contexts = new Array<ContextElement>();
 			}
 
 			if (k8syaml.clusters.find(c => c.name === clusterName) !== undefined) {
 				let index = k8syaml.clusters.findIndex(c => c.name === clusterName);
 				k8syaml.clusters[index].cluster.server = element.k8sEndpoint;
-				k8syaml.clusters[index].cluster["insecure-skip-tls-verify"] = element.insecureSkipTlsVerify;
+				k8syaml.clusters[index].cluster["insecure-skip-tls-verify"] = insecureSkipTlsVerify;
 			} else {
 				let clusterDetails: ClusterCluster = new ClusterCluster(element.k8sEndpoint);
-				clusterDetails["insecure-skip-tls-verify"] = element.insecureSkipTlsVerify;
+				clusterDetails["insecure-skip-tls-verify"] = insecureSkipTlsVerify;
 				let cluster: ClusterElement = new ClusterElement(clusterName, clusterDetails);
 				k8syaml.clusters.push(cluster);
 			}
@@ -205,7 +198,7 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 			
 
 		}).catch(resp => {
-			vscode.window.showErrorMessage(resp.message);
+			vscode.window.showErrorMessage("Error logging in");
 			return false;
 		});
 
