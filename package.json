@@ -1,0 +1,102 @@
+{
+    "name": "admiral",
+    "displayName": "Admiral",
+    "description": "vs code admiral extension",
+    "publisher": "DGC",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/icefenix1/admiral"
+    },
+    "engines": {
+        "vscode": "^1.48.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [{
+                "id": "admiral",
+                "title": "Admiral Explorer",
+                "icon": "admiral.svg"
+            }]
+        },
+        "configuration": [{
+            "title": "Admiral Configuration",
+            "properties": {
+                "conf.application.admiralK8SDetails": {
+                    "type": "object",
+                    "properties": {
+                        "kubeconfig": {
+                            "type": "string",
+                            "description": "Location of the default kubeconfig file"
+                        }
+                    }
+                },
+                "conf.application.admiralEndPoints": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "title": "Admiral Endpoint",
+                        "properties": {
+                            "endpoint": {
+                                "type": "string",
+                                "description": "Endpoint Url"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of cluster"
+                            },
+                            "user": {
+                                "type": "string",
+                                "description": "User to login as"
+                            },
+                            "k8sEndpoint": {
+                                "type": "string",
+                                "description": "k8s Api endpoint"
+                            }
+                        }
+                    },
+                    "default": {},
+                    "description": "Admiral Locations to connect to.",
+                    "scope": "application"
+                }
+            }
+        }],
+        "commands": [{
+            "command": "admiral.helloWorld",
+            "title": "Hello World"
+        }]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "lint": "eslint src --ext ts",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.48.0",
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.0.0",
+        "@types/node": "^14.0.27",
+        "eslint": "^7.6.0",
+        "@typescript-eslint/eslint-plugin": "^3.8.0",
+        "@typescript-eslint/parser": "^3.8.0",
+        "glob": "^7.1.6",
+        "mocha": "^8.0.1",
+        "typescript": "^3.8.3",
+        "vscode-test": "^1.4.0"
+    },
+    "dependencies": {
+        "@types/yamljs": "^0.2.31",
+        "axios": "^0.19.2",
+        "yamljs": "^0.3.0"
+    }
+}

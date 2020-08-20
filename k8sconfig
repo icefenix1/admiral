@@ -1,0 +1,20 @@
+apiVersion: v1
+clusters:
+  - {cluster: {certificate-authority: fake-ca-file, server: 'https://1.2.3.4'}, name: development}
+  - {cluster: {insecure-skip-tls-verify: true, server: 'https://5.6.7.8'}, name: scratch}
+  - {name: bca, cluster: {server: null, insecure-skip-tls-verify: null}}
+  - {name: abc, cluster: {server: null, insecure-skip-tls-verify: null}}
+contexts:
+  - {context: {cluster: development, namespace: frontend, user: developer}, name: dev-frontend}
+  - {context: {cluster: development, namespace: storage, user: developer}, name: dev-storage}
+  - {context: {cluster: scratch, namespace: default, user: experimenter}, name: exp-scratch}
+  - {name: dev-ops-box-bob/bca/bca-user, context: {user: bca-user, cluster: bca, namespace: dev-ops-box-bob}}
+  - {name: dev-ops-box-obo/abc/abc-user, context: {user: abc-user, cluster: abc, namespace: dev-ops-box-obo}}
+current-context: ""
+kind: Config
+preferences: {}
+users:
+  - {name: developer, user: {client-certificate: fake-cert-file, client-key: fake-key-file}}
+  - {name: experimenter, user: {password: some-password, username: exp}}
+  - {user: {username: bob, token: eyJ1c2VybmFtZSI6Ym9iLCJwYXNzd29yZDoiMTIzNH0=}, name: bca-user}
+  - {user: {username: obo, token: eyJ1c2VybmFtZSI6b2JvLCJwYXNzd29yZDoiMTIzNH0=}, name: abc-user}
