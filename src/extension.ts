@@ -13,20 +13,26 @@ import fs from 'fs';
 let currentConfig = new Array<AdmiralEndPoint>();
 let k8sconfigLocation: string;
 let k8syaml: K8Sconfig;
-let myStatusBarItem: vscode.StatusBarItem;
-
+let admiralStatusBar: vscode.StatusBarItem;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 
-
+	const admiralLoginID = 'extension.admirallogin';
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "admiral" is now active!');
 
-	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);	
-	context.subscriptions.push(myStatusBarItem);
+	const disposable = vscode.commands.registerCommand(admiralLoginID, () => {
+		// Loop through Config anf log in
+		loopConfig(true);
+	});
+
+	admiralStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+	admiralStatusBar.command = admiralLoginID;
+	admiralStatusBar.tooltip = "Click to log in";
+	context.subscriptions.push(admiralStatusBar);
 
 	let template: string = "apiVersion: v1\nclusters:\ncontexts:\ncurrent-context: \"\"\nkind: Config\npreferences: {}\nusers:";
 
@@ -35,8 +41,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	updatek8s();
 
 	loopConfig();
-
-	updateStatusBarItem();
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
 
@@ -47,19 +51,20 @@ export async function activate(context: vscode.ExtensionContext) {
 		if (e.affectsConfiguration('conf.application.admiralEndPoints')) {
 			loopConfig();
 		}
-
-		updateStatusBarItem();
 	}));
+
+
+	context.subscriptions.push(disposable);
 
 }
 
 function updateStatusBarItem(): void {
 
-		let loggedInCount = currentConfig.filter(loggedin => loggedin.notLoggedIn !== true).length;
-	
-		myStatusBarItem.text = `$(shield) Admiral logins ${loggedInCount}/${currentConfig.length}`;
-		myStatusBarItem.show();
-	
+	let loggedInCount = currentConfig.filter(loggedin => loggedin.notLoggedIn !== true).length;
+
+	admiralStatusBar.text = `$(shield) Admiral logins ${loggedInCount}/${currentConfig.length}`;
+	admiralStatusBar.show();
+
 }
 
 function updatek8s() {
@@ -70,7 +75,7 @@ function updatek8s() {
 		} else {
 			k8sconfigLocation = config.kubeconfig !== undefined ? config.kubeconfig : "";
 
-			if(!fs.existsSync(k8sconfigLocation)){
+			if (!fs.existsSync(k8sconfigLocation)) {
 				let output: string = YAML.stringify(k8syaml, 2, 2);
 				fs.writeFileSync(k8sconfigLocation, output);
 			}
@@ -80,7 +85,7 @@ function updatek8s() {
 	}
 };
 
-async function loopConfig() {
+async function loopConfig(forceLogin: boolean = false) {
 	var config = vscode.workspace.getConfiguration('').get<Array<AdmiralEndPoint>>('conf.application.admiralEndPoints');
 
 	if (config !== undefined) {
@@ -93,10 +98,12 @@ async function loopConfig() {
 
 			let doLogin: boolean = true;
 
-			if (currentConfig.length > 0) {
-				let currentItem = currentConfig.find(item => item.name === element.name);
-				if (currentItem !== undefined) {
-					doLogin !== element.compare(currentItem);
+			if (!forceLogin) {
+				if (currentConfig.length > 0) {
+					let currentItem = currentConfig.find(item => item.name === element.name);
+					if (currentItem !== undefined) {
+						doLogin !== element.compare(currentItem);
+					}
 				}
 			}
 
@@ -105,7 +112,7 @@ async function loopConfig() {
 				while (j < 3) {
 					await logUserIn(element).then(lui => {
 						element.notLoggedIn = !lui;
-						if (lui) {							
+						if (lui) {
 							j = 3;
 							i++;
 						} else {
@@ -117,7 +124,6 @@ async function loopConfig() {
 
 		}
 		currentConfig = config;
-		updateStatusBarItem();
 	};
 }
 
@@ -141,15 +147,15 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 
 		axios.get<AdmiralResponse>(element.endpoint + endodedCreds).then(async resp => {
 			let token: string = resp.data.token;
-	    //axios.get(element.endpoint + endodedCreds).then(async resp => {
-		//	let token: string = endodedCreds;
+			//axios.get(element.endpoint + endodedCreds).then(async resp => {
+			//	let token: string = endodedCreds;
 			let username = element.user.toLowerCase().replace('.', '-');
 			let contextNamespace: string = "dev-ops-box-" + username;
 			let clusterName: string = element.name;
 			let clusterUser: string = clusterName + "-user";
 			let contextName: string = contextNamespace + "/" + clusterName + "/" + clusterUser;
-			let insecureSkipTlsVerify: boolean = element.insecureSkipTlsVerify !== undefined ? element.insecureSkipTlsVerify : false; 
-			
+			let insecureSkipTlsVerify: boolean = element.insecureSkipTlsVerify !== undefined ? element.insecureSkipTlsVerify : false;
+
 
 			if (k8syaml.clusters === undefined || k8syaml.clusters === null) {
 				k8syaml.clusters = new Array<ClusterElement>();
@@ -192,9 +198,10 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 
 			let output: string = YAML.stringify(k8syaml, 2, 2);
 			fs.writeFileSync(k8sconfigLocation, output);
-			
+
 			console.log(`Logged in to cluster ${element.name}`);
-			
+
+			updateStatusBarItem();
 
 		}).catch(resp => {
 			vscode.window.showErrorMessage("Error logging in");
