@@ -135,7 +135,7 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 			return false;
 		}
 
-		let creds: string = '{"username":' + element.user + ',"password:"' + f + '}';
+		let creds: string = '{"username":"' + element.user + '","password":"' + f + '"}';
 		let b: Buffer = Buffer.from(creds);
 		let endodedCreds: string = b.toString('base64');
 
