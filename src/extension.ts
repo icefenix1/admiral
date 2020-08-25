@@ -177,7 +177,6 @@ async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
 				k8syaml.users[index].user.token = token;
 			} else {
 				let userDetails: UserUser = new UserUser();
-				userDetails.username = username;
 				userDetails.token = token;
 				let user: UserElement = new UserElement(clusterUser, userDetails);
 				k8syaml.users.push(user);
