@@ -39,3 +39,9 @@ Minor UX updates.
 * Tied the added command to status bar. You can now click to login.
 
 * Modified the Login loop to have a forced option to allow for the command.
+
+### 1.5.0
+
+Minor UX updates.
+
+* Added Cluster to the Password Prompt

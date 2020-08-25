@@ -129,7 +129,7 @@ async function loopConfig(forceLogin: boolean = false) {
 
 
 async function logUserIn(element: AdmiralEndPoint): Promise<boolean> {
-	let userprompt: string = "Password for User " + element.user + " :";
+	let userprompt: string = "Password for User " + element.user + " in Cluster " + element.name + " :";
 	let options: InputBoxOptions = {
 		prompt: userprompt,
 		password: true
